@@ -26,9 +26,9 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const options = {
-  httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
 };
 
 const registerUser = asyncHandler(async (req, res) => {
