@@ -141,9 +141,21 @@ const commentOnPost = asyncHandler(async (req, res) => {
 
   await post.save();
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, post, "Comment added successfully"));
+  const populatedPost = await Post.findById(post._id)
+    .populate("owner", "fullName username email avatar")
+    .populate("likes", "fullName username avatar")
+    .populate(
+      "comments.user",
+      "fullName username email avatar"
+    );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      populatedPost,
+      "Comment added successfully"
+    )
+  );
 });
 
 const deleteCommentOnPost = asyncHandler(async (req , res) => {
