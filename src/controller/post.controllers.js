@@ -32,11 +32,10 @@ const newPost = asyncHandler(async (req, res) => {
     type: "post",
     owner: loginUserId,
   });
-
-  const populatedPost = await Post.findById(newPost._id)
-    .populate("owner", "name email")
-    .populate("likes", "name email")
-    .populate("comments.user", "name email");
+const populatedPost = await Post.findById(newPost._id)
+  .populate("owner", "fullName username email avatar")
+  .populate("likes", "fullName username avatar")
+  .populate("comments.user", "fullName username avatar");
 
   return res.status(201).json(
     new ApiResponse(
@@ -72,18 +71,22 @@ const deletePost = asyncHandler(async (req, res) => {
 
 const getAllPosts = asyncHandler(async (req, res) => {
   const posts = await Post.find()
-    .populate("owner", "name email")
-    .populate("likes", "name email")
-    .populate("comments.user", "name    email");
+    .populate("owner", "fullName username email avatar")
+    .populate("likes", "fullName username avatar")
+    .populate("comments.user", "fullName username avatar")
+    .sort({ createdAt: -1 });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, posts, "Posts fetched successfully"));
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      posts,
+      "Posts fetched successfully"
+    )
+  );
 });
 
 const likeAndUnlikePost = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
   const loginUserId = req.user._id;
 
   const post = await Post.findById(id);
@@ -92,21 +95,32 @@ const likeAndUnlikePost = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Post not found");
   }
 
-  const isLiked = post.likes.includes(loginUserId);
+  const isLiked = post.likes.some(
+    (userId) => userId.toString() === loginUserId.toString()
+  );
 
   if (isLiked) {
     post.likes.pull(loginUserId);
-    await post.save();
-    return res
-      .status(200)
-      .json(new ApiResponse(200, post, "Post unliked successfully"));
   } else {
     post.likes.push(loginUserId);
-    await post.save();
-    return res
-      .status(200)
-      .json(new ApiResponse(200, post, "Post liked successfully"));
   }
+
+  await post.save();
+
+  const populatedPost = await Post.findById(post._id)
+    .populate("owner", "fullName username email avatar")
+    .populate("likes", "fullName username avatar")
+    .populate("comments.user", "fullName username avatar");
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      populatedPost,
+      isLiked
+        ? "Post unliked successfully"
+        : "Post liked successfully"
+    )
+  );
 });
 
 const commentOnPost = asyncHandler(async (req, res) => {
