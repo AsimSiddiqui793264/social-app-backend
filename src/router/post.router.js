@@ -1,7 +1,7 @@
 import Router from "express";
 
 import {
-    createPost,
+    newPost,
     deletePost,
     getAllPosts,
     likeAndUnlikePost,
@@ -16,7 +16,7 @@ import {verifyJWT} from "../middlewares/authentication.middlewares.js"
 
 const router = Router();
 
-router.route("/create-post").post(verifyJWT , upload.single("post") , createPost);
+router.route("/create-post").post(verifyJWT , upload.single("post") , newPost);
 router.route("/delete-post/:id").delete(verifyJWT , deletePost);
 router.route("/get-all-posts").get(verifyJWT , getAllPosts);
 router.route("/like-unlike-post/:id").patch(verifyJWT , likeAndUnlikePost);

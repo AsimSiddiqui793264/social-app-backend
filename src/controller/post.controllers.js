@@ -5,7 +5,7 @@ import { Post } from "../models/post.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import cloudinary from "cloudinary";
 
-const createPost = asyncHandler(async (req, res) => {
+const newPost = asyncHandler(async (req, res) => {
   const { caption } = req.body;
 
   const loginUserId = req.user._id;
@@ -13,13 +13,13 @@ const createPost = asyncHandler(async (req, res) => {
   const file = req.file?.path;
 
   if (!file) {
-    throw new ApiError(401, "file is required");
+    throw new ApiError(400, "Post image is required");
   }
 
   const fileUpload = await uploadOnCloudinary(file);
 
   if (!fileUpload) {
-    throw new ApiError(500, "File upload on cloudinary error");
+    throw new ApiError(500, "File upload on Cloudinary error");
   }
 
   const newPost = await Post.create({
@@ -29,16 +29,22 @@ const createPost = asyncHandler(async (req, res) => {
       secure_url: fileUpload.secure_url,
       resource_type: fileUpload.resource_type,
     },
-
     type: "post",
-
     owner: loginUserId,
   });
 
-  return res.status(201).json({
-    message: "Post created successfully",
-    newPost,
-  });
+  const populatedPost = await Post.findById(newPost._id)
+    .populate("owner", "name email")
+    .populate("likes", "name email")
+    .populate("comments.user", "name email");
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      populatedPost,
+      "Post created successfully"
+    )
+  );
 });
 
 const deletePost = asyncHandler(async (req, res) => {
@@ -248,7 +254,7 @@ return res
 });
 
 export {
-  createPost,
+  newPost,
   deletePost,
   getAllPosts,
   likeAndUnlikePost,
