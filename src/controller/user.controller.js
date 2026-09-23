@@ -114,21 +114,41 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          User: LoggedInUser,
-          accessToken,
-          refreshToken,
-        },
-        "User LoggedIn Successfully"
-      )
-    );
+  .status(200)
+  .cookie("accessToken", accessToken, options)
+  .cookie("refreshToken", refreshToken, options)
+  .json(
+    new ApiResponse(
+      200,
+      {
+        User: LoggedInUser,
+        accessToken,
+        refreshToken,
+      },
+      "User LoggedIn Successfully"
+    )
+  );
 });
+
+// const logoutUser = asyncHandler(async (req, res) => {
+//   await User.findByIdAndUpdate(
+//     req.user._id,
+//     {
+//       $set: {
+//         refreshToken: undefined,
+//       },
+//     },
+//     {
+//       new: true,
+//     }
+//   );
+
+//   return res
+//     .status(200)
+//     .clearCookie("accessToken", options)
+//     .clearCookie("refreshToken", options)
+//     .json(new ApiResponse(200, {}, "User loggedOut Successfully"));
+// });
 
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
@@ -147,7 +167,13 @@ const logoutUser = asyncHandler(async (req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User loggedOut Successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        "User loggedOut Successfully"
+      )
+    );
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
